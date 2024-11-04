@@ -4,19 +4,6 @@ from time import sleep
 from tqdm import tqdm
 
 
-def create_browser() -> webdriver:
-    option = webdriver.ChromeOptions()
-    option.add_argument('--headless')
-    # Строчка сверху влияет на запуск/не запуск браузера
-    option.add_argument('--blink-settings=imagesEnabled=false')
-    browser = webdriver.Chrome(options=option)
-    return browser
-
-
-def open_page(browser: webdriver, url: str) -> None:
-    browser.get(url)
-
-
 def press_button(browser: webdriver) -> None:
     xpath_button = "/html/body/div[1]/div/div[5]/div/div/div/div[2]/div[3]/div[1]/div/div[2]/div[7]/button"
     browser.find_element(By.XPATH, xpath_button).click()
@@ -34,7 +21,7 @@ def find_data(browser: webdriver) -> list:
     class_rate = "Ia-4D.qiRU-.OtYYq.tzdr8"
     class_successful_star = "LFBXk.KN22d"
 
-    for _ in tqdm(range(39)):
+    for _ in tqdm(range(39), desc="Pressing buttons", colour="GREEN"):
         press_button(browser)
         sleep(1)
 
@@ -42,8 +29,8 @@ def find_data(browser: webdriver) -> list:
     reviews = block_reviews.find_elements(By.CSS_SELECTOR, css_selector_reviews)
 
     reviews_data = []
-
-    for review in reviews:
+    
+    for review in tqdm(reviews, desc="Parsing reviews", colour="GREEN"):
         block_text = review.find_element(By.CLASS_NAME, class_block_text)
         text = block_text.find_element(By.CLASS_NAME, class_text)
         formatted_text = text.text.split("\n")
@@ -57,16 +44,3 @@ def find_data(browser: webdriver) -> list:
         reviews_data.append((formatted_text[0], count_start))
 
     return reviews_data
-
-
-def main():
-    browser = create_browser()
-    open_page(browser=browser, url="https://travel.yandex.ru/hotels/moscow/beta-izmailovo/reviews/")
-
-    data = find_data(browser)
-    print(data)
-    print(len(data))
-
-
-if __name__ == '__main__':
-    main()
